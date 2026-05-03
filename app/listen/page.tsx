@@ -1,13 +1,12 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Play, Pause, Headphones, Clock, ChevronRight, X, Volume2 } from 'lucide-react'
+import { Search, Play, Pause, Headphones, Clock, ChevronRight, X, Volume2, Flame, TrendingUp, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { DEMO_BOOKS, GENRE_LIST, type DemoBook } from '@/lib/demo-books'
-
-// ─── Bottom mini-player state ─────────────────────────────────────────────────
-let globalCurrentBook: DemoBook | null = null
+import { getRecommendations, type Recommendations, type ContinueItem } from '@/lib/recommendations'
+import { getListeningStats } from '@/lib/listening'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const PLAYS_DISPLAY = (n: number) =>
@@ -20,6 +19,62 @@ const GENRE_COLORS: Record<string, string> = {
   Family:     'from-pink-950/80 to-rose-950/80',
   Spiritual:  'from-emerald-950/80 to-teal-950/80',
   Fiction:    'from-purple/80 to-violet-950/80',
+}
+
+// ─── Shelf Item ───────────────────────────────────────────────────────────────
+function ShelfItem({ book, progress }: { book: DemoBook; progress?: number }) {
+  const [imgErr, setImgErr] = useState(false)
+  return (
+    <Link href={`/listen/${book.id}`} className="group shrink-0 w-36 sm:w-44">
+      <div className="relative aspect-video rounded-xl overflow-hidden mb-2 border border-white/[0.06] group-hover:border-gold/25 transition-all bg-void">
+        {!imgErr
+          ? <Image src={book.thumbnail} alt={book.title} fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              onError={() => setImgErr(true)} sizes="176px" />
+          : <div className="absolute inset-0 bg-gradient-to-br from-purple/40 to-void flex items-center justify-center"><span className="text-3xl">📖</span></div>
+        }
+        <div className="absolute inset-0 bg-gradient-to-t from-void/60 via-transparent to-transparent" />
+        {progress !== undefined && progress > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/[0.08]">
+            <div className="h-full bg-gold rounded-full transition-all" style={{ width: `${progress}%` }} />
+          </div>
+        )}
+        {progress !== undefined && progress > 0 && (
+          <div className="absolute top-2 right-2">
+            <span className="bg-void/80 backdrop-blur-sm text-gold text-[8px] font-mono px-1.5 py-0.5 rounded-full">
+              {progress}%
+            </span>
+          </div>
+        )}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-9 h-9 rounded-full bg-gold/80 backdrop-blur-sm flex items-center justify-center shadow-lg">
+            <Play size={14} className="text-void ml-0.5" />
+          </div>
+        </div>
+      </div>
+      <p className="font-serif text-[12px] font-medium text-white/75 group-hover:text-gold2 transition-colors line-clamp-2 leading-tight mb-0.5">{book.title}</p>
+      <p className="text-white/25 text-[10px]">{book.duration} · {book.genre}</p>
+    </Link>
+  )
+}
+
+function BookShelf({ label, icon, books, progresses }: {
+  label: string; icon: React.ReactNode; books: DemoBook[]; progresses?: Record<string, number>
+}) {
+  if (!books.length) return null
+  return (
+    <div className="mb-10">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="h-px w-5 bg-gold/40" />
+        <p className="font-mono text-[9px] tracking-[0.35em] text-gold/55 uppercase flex items-center gap-1.5">
+          {icon}{label}
+        </p>
+      </div>
+      <div className="flex gap-4 overflow-x-auto pb-3 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
+        {books.map(b => <ShelfItem key={b.id} book={b} progress={progresses?.[b.id]} />)}
+      </div>
+    </div>
+  )
 }
 
 // ─── Book Card ────────────────────────────────────────────────────────────────
@@ -208,6 +263,13 @@ export default function ListenPage() {
   const [genre, setGenre] = useState('All')
   const [search, setSearch] = useState('')
   const [activeBook, setActiveBook] = useState<DemoBook | null>(null)
+  const [recs, setRecs] = useState<Recommendations | null>(null)
+  const [listenStreak, setListenStreak] = useState(0)
+
+  useEffect(() => {
+    setRecs(getRecommendations())
+    setListenStreak(getListeningStats().currentStreak)
+  }, [])
 
   const filtered = DEMO_BOOKS.filter(b => {
     const matchGenre = genre === 'All' || b.genre === genre || b.type === genre
@@ -238,7 +300,8 @@ export default function ListenPage() {
           <span className="font-serif font-bold text-[15px] text-white">KadhaiSolai</span>
         </Link>
         <div className="flex items-center gap-2">
-          <Link href="/pricing" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Pricing</Link>
+          <Link href="/stories" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Stories</Link>
+          <Link href="/dashboard" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Dashboard</Link>
           <Link href="/author" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors">Upload Book</Link>
         </div>
       </nav>
@@ -264,6 +327,16 @@ export default function ListenPage() {
             </div>
           </div>
         </div>
+
+        {/* ── Continue Listening ── */}
+        {recs && recs.continueListening.length > 0 && (
+          <BookShelf
+            label="Continue Listening"
+            icon={<span>▶</span>}
+            books={recs.continueListening}
+            progresses={Object.fromEntries(recs.continueListening.map(b => [b.id, b.completionPct]))}
+          />
+        )}
 
         {/* ── Featured ── */}
         <FeaturedCard book={featured} onPlay={setActiveBook} />
@@ -303,6 +376,33 @@ export default function ListenPage() {
                 onPlay={setActiveBook}
                 playing={activeBook?.id === book.id} />
             ))}
+          </div>
+        )}
+
+        {/* ── For You + Trending ── */}
+        {recs && (
+          <div className="mt-12 space-y-2">
+            {recs.forYou.length > 0 && (
+              <BookShelf
+                label={recs.topGenre ? `More ${recs.topGenre} for You` : 'Recommended for You'}
+                icon={<Sparkles size={9} />}
+                books={recs.forYou}
+              />
+            )}
+            <BookShelf
+              label="Trending Now"
+              icon={<TrendingUp size={9} />}
+              books={recs.trending}
+            />
+          </div>
+        )}
+
+        {/* ── Listening streak CTA ── */}
+        {listenStreak > 0 && (
+          <div className="mt-8 flex items-center justify-center gap-3 py-4 px-6 rounded-2xl border border-orange-400/20 bg-orange-400/[0.04]">
+            <Flame size={16} className="text-orange-400" />
+            <span className="text-orange-300 text-sm font-medium">{listenStreak}-day listening streak!</span>
+            <span className="text-white/25 text-xs">Keep it going</span>
           </div>
         )}
 

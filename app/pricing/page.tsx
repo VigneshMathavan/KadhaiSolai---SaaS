@@ -37,7 +37,7 @@ const AUTHOR_PLANS = [
     tagline: 'For serious Tamil writers',
     price: { monthly: 249, annual: 199 },
     cta: 'Start Creating',
-    href: '/auth',
+    href: '/author',
     highlight: true,
     features: [
       { text: 'Upload up to 15 books', ok: true },
@@ -59,7 +59,7 @@ const AUTHOR_PLANS = [
     tagline: 'For authors & publishing houses',
     price: { monthly: 699, annual: 549 },
     cta: 'Go Publisher',
-    href: '/auth',
+    href: '/author',
     highlight: false,
     features: [
       { text: 'Unlimited book uploads', ok: true },
@@ -107,7 +107,7 @@ const LISTENER_PLANS = [
     tagline: 'The full Tamil audiobook experience',
     price: { monthly: 79, annual: 58 },
     cta: 'Go Premium',
-    href: '/auth',
+    href: '/author',
     highlight: true,
     features: [
       { text: 'Stream all public books — unlimited', ok: true },
@@ -130,7 +130,7 @@ const LISTENER_PLANS = [
     tagline: 'Tamil stories for the whole household',
     price: { monthly: 199, annual: 149 },
     cta: 'Get Family',
-    href: '/auth',
+    href: '/author',
     highlight: false,
     features: [
       { text: 'Everything in Premium', ok: true },
@@ -308,7 +308,6 @@ export default function PricingPage() {
         </Link>
         <div className="flex items-center gap-2">
           <Link href="/listen" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Browse</Link>
-          <Link href="/auth" className="text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Sign In</Link>
           <Link href="/author" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors">Upload Book</Link>
         </div>
       </nav>
@@ -498,10 +497,6 @@ export default function PricingPage() {
               <Link href={audience === 'authors' ? '/author' : '/listen'}
                 className="flex items-center gap-2 bg-gold text-void font-semibold px-8 py-3.5 rounded-full hover:bg-gold2 transition-all text-sm hover:-translate-y-0.5 hover:shadow-xl hover:shadow-gold/20">
                 {audience === 'authors' ? <><Upload size={14} /> Upload Your Book</> : <><Headphones size={14} /> Browse Stories</>}
-              </Link>
-              <Link href="/auth"
-                className="flex items-center gap-2 border border-white/[0.08] text-white/45 px-8 py-3.5 rounded-full hover:border-white/20 hover:text-white/70 transition-all text-sm">
-                Create Account →
               </Link>
             </div>
           </div>

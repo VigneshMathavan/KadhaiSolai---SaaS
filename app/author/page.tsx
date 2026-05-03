@@ -4,7 +4,7 @@ import { useDropzone } from 'react-dropzone'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, BookOpen, Loader2, CheckCircle, XCircle, Clock, Headphones, LogOut } from 'lucide-react'
+import { Upload, BookOpen, Loader2, CheckCircle, XCircle, Headphones } from 'lucide-react'
 import Link from 'next/link'
 
 interface Book {
@@ -37,7 +37,6 @@ const VOICES = [
 ]
 
 export default function AuthorDashboard() {
-  const [user, setUser] = useState<any>(null)
   const [books, setBooks] = useState<Book[]>([])
   const [jobs, setJobs] = useState<TtsJob[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,22 +51,16 @@ export default function AuthorDashboard() {
   const [pace, setPace] = useState(1.0)
   const [file, setFile] = useState<File | null>(null)
 
-  // Load user and books
+  // Load all books
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { window.location.href = '/auth'; return }
-      setUser(user)
-
       const { data } = await supabase
         .from('books')
         .select('*')
-        .eq('author_id', user.id)
         .order('created_at', { ascending: false })
 
       setBooks(data || [])
 
-      // Load job statuses
       if (data?.length) {
         const processingIds = data.filter(b => b.status === 'processing').map(b => b.id)
         if (processingIds.length > 0) {
@@ -96,7 +89,6 @@ export default function AuthorDashboard() {
         .in('book_id', processing.map(b => b.id))
       if (jobData) setJobs(jobData)
 
-      // Refresh books to catch status changes
       const { data: bookData } = await supabase
         .from('books')
         .select('*')
@@ -127,7 +119,7 @@ export default function AuthorDashboard() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!file || !title || !user) return
+    if (!file || !title) return
     if (!file.name.endsWith('.txt')) { toast.error('Please upload a .txt file'); return }
 
     setUploading(true)
@@ -135,7 +127,7 @@ export default function AuthorDashboard() {
 
     try {
       // 1. Upload .txt to Supabase Storage
-      const txtPath = `${user.id}/${Date.now()}_${file.name}`
+      const txtPath = `public/${Date.now()}_${file.name}`
       const { error: storageErr } = await supabase.storage
         .from('books-txt')
         .upload(txtPath, file)
@@ -145,7 +137,6 @@ export default function AuthorDashboard() {
       const { data: book, error: bookErr } = await supabase
         .from('books')
         .insert({
-          author_id: user.id,
           title: title.trim(),
           description: description.trim(),
           genre,
@@ -180,7 +171,6 @@ export default function AuthorDashboard() {
       setShowUpload(false)
       setFile(null); setTitle(''); setDescription('')
 
-      // Refresh
       const { data: refreshed } = await supabase
         .from('books').select('*').eq('id', book.id).single()
       if (refreshed) setBooks(prev => prev.map(b => b.id === refreshed.id ? refreshed : b))
@@ -192,11 +182,6 @@ export default function AuthorDashboard() {
     } finally {
       setUploading(false)
     }
-  }
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/'
   }
 
   const getJobProgress = (bookId: string) => jobs.find(j => j.book_id === bookId)
@@ -217,12 +202,12 @@ export default function AuthorDashboard() {
           <span className="text-white/30 text-sm ml-2">/ Author Dashboard</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/listen" className="text-white/50 hover:text-white text-sm transition-colors flex items-center gap-1">
-            <Headphones size={14} /> Listen
+          <Link href="/dashboard" className="text-white/50 hover:text-white text-sm transition-colors flex items-center gap-1">
+            Dashboard
           </Link>
-          <button onClick={handleSignOut} className="text-white/50 hover:text-white text-sm transition-colors flex items-center gap-1">
-            <LogOut size={14} /> Sign out
-          </button>
+          <Link href="/listen" className="text-white/50 hover:text-white text-sm transition-colors flex items-center gap-1">
+            <Headphones size={14} /> Browse
+          </Link>
         </div>
       </header>
 
@@ -315,7 +300,12 @@ export default function AuthorDashboard() {
                     <div>
                       <Upload className="w-8 h-8 text-white/30 mx-auto mb-2" />
                       <p className="text-white/60 text-sm mb-1">Drop your Tamil .txt file here</p>
-                      <p className="text-white/30 text-xs">Only .txt files · Max 10MB · Tamil Unicode required</p>
+                      <p className="text-white/30 text-xs mb-3">Only .txt files · Max 10MB · Tamil Unicode required</p>
+                      <a href="/sample-tamil.txt" download
+                        className="inline-flex items-center gap-1.5 text-[10px] text-gold/60 border border-gold/20 px-3 py-1.5 rounded-full hover:bg-gold/10 hover:text-gold transition-all"
+                        onClick={e => e.stopPropagation()}>
+                        ↓ Download Sample Tamil .txt
+                      </a>
                     </div>
                   )}
                 </div>
@@ -356,7 +346,6 @@ export default function AuthorDashboard() {
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                   className="p-5 rounded-2xl border border-white/7 bg-white/[0.02] hover:border-gold/20 transition-all">
 
-                  {/* Cover placeholder */}
                   <div className="w-full aspect-[3/2] rounded-xl mb-4 flex items-center justify-center text-3xl"
                     style={{ background: 'linear-gradient(135deg, #2a1060, #4a0e2a)' }}>
                     📖
@@ -369,7 +358,6 @@ export default function AuthorDashboard() {
 
                   <p className="text-xs text-gold/70 mb-1">{book.genre}</p>
 
-                  {/* Processing progress */}
                   {book.status === 'processing' && job && (
                     <div className="mt-3">
                       <div className="flex justify-between text-xs text-white/40 mb-1">

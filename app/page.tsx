@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Upload, Headphones, Zap, BookOpen, Mic, Users, ArrowUpRight, Globe } from 'lucide-react'
+import { Upload, Headphones, Zap, BookOpen, Mic, Users, ArrowUpRight, Globe, Pencil } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import DemoSection from '@/components/DemoSection'
 
@@ -128,8 +128,9 @@ export default function HomePage() {
         </Link>
         <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-1.5 backdrop-blur-xl">
           <Link href="/listen" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Browse</Link>
+          <Link href="/stories" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Stories</Link>
+          <Link href="/dashboard" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Dashboard</Link>
           <Link href="/pricing" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Pricing</Link>
-          <Link href="/auth" className="text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Sign In</Link>
           <Link href="/author" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors">Upload Book</Link>
         </div>
       </nav>
@@ -433,6 +434,63 @@ export default function HomePage() {
               </div>
               <h3 className="font-serif text-xl text-white mb-2 group-hover:text-gold2 transition-colors duration-300">Global Reach</h3>
               <p className="text-white/32 text-sm leading-relaxed">Tamil readers everywhere. Stream on any device. Your story, no borders.</p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── COMMUNITY STORIES ────────────────────────────────────────────────── */}
+      <section className="py-20 px-6 lg:px-16 border-t border-white/[0.04]">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
+            <div>
+              <SectionLabel>Community</SectionLabel>
+              <h2 className="font-serif font-bold text-white leading-[0.88]"
+                style={{ fontSize: 'clamp(2.8rem, 7vw, 6rem)' }}>
+                Write. Share.<br /><em className="text-gold italic">Inspire.</em>
+              </h2>
+            </div>
+            <p className="text-white/25 text-sm max-w-xs leading-relaxed font-light lg:mb-2">
+              No account needed. Write Tamil stories, get AI assistance, track your streak, and share with readers worldwide.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="relative p-8 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-purple/[0.08] via-transparent to-transparent hover:border-purple/25 transition-all duration-300 group overflow-hidden">
+              <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity"
+                style={{ background: 'radial-gradient(circle, #4a2d8a, transparent)' }} />
+              <div className="relative">
+                <div className="text-3xl mb-4">✍️</div>
+                <h3 className="font-serif text-2xl text-white mb-2 group-hover:text-gold2 transition-colors duration-300">Write a Story</h3>
+                <p className="text-white/30 text-sm leading-relaxed mb-6">
+                  AI-assisted story creation with continue, improve, and title suggestions. Build a daily writing streak.
+                </p>
+                <Link href="/create"
+                  className="inline-flex items-center gap-2 bg-gold text-void font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-gold2 transition-all hover:-translate-y-0.5">
+                  <Pencil size={13} /> Start Writing
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ delay: 0.1 }}
+              className="relative p-8 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-gold/[0.04] via-transparent to-transparent hover:border-gold/20 transition-all duration-300 group overflow-hidden">
+              <div className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full blur-3xl opacity-15 group-hover:opacity-25 transition-opacity"
+                style={{ background: 'radial-gradient(circle, #c9a84c, transparent)' }} />
+              <div className="relative">
+                <div className="text-3xl mb-4">📖</div>
+                <h3 className="font-serif text-2xl text-white mb-2 group-hover:text-gold2 transition-colors duration-300">Read Tamil Stories</h3>
+                <p className="text-white/30 text-sm leading-relaxed mb-6">
+                  Discover community-written Tamil stories across Drama, Thriller, Poetry and more. Like, comment, share.
+                </p>
+                <Link href="/stories"
+                  className="inline-flex items-center gap-2 border border-white/[0.1] text-white/50 px-6 py-2.5 rounded-full text-sm hover:border-gold/30 hover:text-gold transition-all">
+                  Browse Stories <ArrowUpRight size={13} />
+                </Link>
+              </div>
             </motion.div>
           </div>
         </div>
