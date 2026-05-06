@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, X, Mic, Headphones, Upload, Zap, Users, BookOpen, ArrowUpRight, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
+import AppNav from '@/components/AppNav'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Audience = 'authors' | 'listeners'
@@ -300,17 +301,7 @@ export default function PricingPage() {
           style={{ background: 'radial-gradient(circle, #4a2d8a 0%, transparent 60%)' }} />
       </div>
 
-      {/* NAV */}
-      <nav className="sticky top-0 z-40 flex items-center justify-between px-6 lg:px-12 py-4 bg-void/90 backdrop-blur-xl border-b border-white/[0.05]">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-purple to-gold flex items-center justify-center text-sm">🎧</div>
-          <span className="font-serif font-bold text-[15px] text-white">KadhaiSolai</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link href="/listen" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Browse</Link>
-          <Link href="/author" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors">Upload Book</Link>
-        </div>
-      </nav>
+      <AppNav />
 
       <main className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-16 lg:py-24">
 

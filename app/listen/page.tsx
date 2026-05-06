@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Play, Pause, Headphones, Clock, ChevronRight, X, Volume2, Flame, TrendingUp, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import AppNav from '@/components/AppNav'
 import Image from 'next/image'
 import { DEMO_BOOKS, GENRE_LIST, type DemoBook } from '@/lib/demo-books'
 import { getRecommendations, type Recommendations, type ContinueItem } from '@/lib/recommendations'
@@ -293,18 +294,7 @@ export default function ListenPage() {
           style={{ background: 'radial-gradient(circle, #4a2d8a 0%, transparent 60%)' }} />
       </div>
 
-      {/* ── NAV ── */}
-      <nav className="sticky top-0 z-40 flex items-center justify-between px-6 lg:px-12 py-4 bg-void/90 backdrop-blur-xl border-b border-white/[0.05]">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-purple to-gold flex items-center justify-center text-sm">🎧</div>
-          <span className="font-serif font-bold text-[15px] text-white">KadhaiSolai</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link href="/stories" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Stories</Link>
-          <Link href="/dashboard" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Dashboard</Link>
-          <Link href="/author" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors">Upload Book</Link>
-        </div>
-      </nav>
+      <AppNav showCredits />
 
       <main className="max-w-7xl mx-auto px-6 lg:px-12 py-10 relative z-10">
 

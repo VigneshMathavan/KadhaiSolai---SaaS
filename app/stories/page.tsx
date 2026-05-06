@@ -8,6 +8,7 @@ import {
   fetchStories, likeStory, unlikeStory, hasLiked, getFingerprint, type Story,
 } from '@/lib/stories'
 import { getStreakData, FLAME_COLORS, flameLevel } from '@/lib/streaks'
+import AppNav from '@/components/AppNav'
 
 const GENRES = ['All', 'Drama', 'Thriller', 'Historical', 'Family', 'Spiritual', 'Fiction', 'Poetry']
 const GENRE_EMOJI: Record<string, string> = {
@@ -151,22 +152,7 @@ export default function StoriesPage() {
       <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.025]"
         style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E\")" }} />
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-40 flex items-center justify-between px-6 lg:px-12 py-4 bg-void/90 backdrop-blur-xl border-b border-white/[0.05]">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-purple to-gold flex items-center justify-center text-sm">🎧</div>
-          <span className="font-serif font-bold text-[15px] text-white">KadhaiSolai</span>
-        </Link>
-        <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-1.5">
-          <Link href="/listen" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05] flex items-center gap-1.5">
-            <Headphones size={11} /> Listen
-          </Link>
-          <Link href="/dashboard" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Dashboard</Link>
-          <Link href="/create" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors flex items-center gap-1.5">
-            <Pencil size={11} /> Write
-          </Link>
-        </div>
-      </nav>
+      <AppNav cta={{ label: '✍️ Write a Story', href: '/create' }} showCredits />
 
       <main className="max-w-4xl mx-auto px-6 py-12">
 

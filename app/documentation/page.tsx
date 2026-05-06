@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { X, ArrowLeft, ChevronRight } from 'lucide-react'
+import AppNav from '@/components/AppNav'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 type Section =
@@ -802,24 +803,7 @@ export default function DocumentationPage() {
           style={{ background: 'radial-gradient(circle, #c9a84c 0%, transparent 60%)' }} />
       </div>
 
-      {/* NAV */}
-      <nav className="sticky top-0 z-40 flex items-center justify-between px-6 lg:px-12 py-4 bg-void/90 backdrop-blur-xl border-b border-white/[0.05]">
-        <Link href="/" className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm">
-          <ArrowLeft size={15} />
-          <span className="hidden sm:inline">KadhaiSolai</span>
-        </Link>
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple to-gold flex items-center justify-center text-xs">🎧</div>
-          <span className="font-serif font-bold text-sm text-white hidden sm:block">KadhaiSolai</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <Link href="/listen" className="hidden sm:block text-xs text-white/35 hover:text-white transition-colors">Library</Link>
-          <Link href="/stories" className="hidden sm:block text-xs text-white/35 hover:text-white transition-colors">Stories</Link>
-          <Link href="/create" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors">
-            Write a Story
-          </Link>
-        </div>
-      </nav>
+      <AppNav cta={{ label: '✍️ Write a Story', href: '/create' }} />
 
       <main className="max-w-6xl mx-auto px-6 lg:px-12 py-14 relative z-10">
 

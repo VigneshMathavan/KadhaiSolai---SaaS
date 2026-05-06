@@ -23,21 +23,21 @@ function GoldParticles() {
     const make = (): P => ({
       x: Math.random() * canvas.width,
       y: canvas.height + 8,
-      vy: -(0.1 + Math.random() * 0.25),
-      vx: (Math.random() - 0.5) * 0.1,
-      r: 0.4 + Math.random() * 0.9,
+      vy: -(0.18 + Math.random() * 0.38),
+      vx: (Math.random() - 0.5) * 0.12,
+      r: 0.4 + Math.random() * 1.1,
       life: 0,
-      max: 280 + Math.random() * 380,
+      max: 500 + Math.random() * 600,
       t: Math.random() * Math.PI * 2,
     })
 
-    const ps: P[] = Array.from({ length: 60 }, () => {
+    const ps: P[] = Array.from({ length: 120 }, () => {
       const p = make(); p.y = Math.random() * canvas.height; p.life = Math.random() * p.max; return p
     })
 
     const tick = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      while (ps.length < 70) ps.push(make())
+      while (ps.length < 130) ps.push(make())
       for (let i = ps.length - 1; i >= 0; i--) {
         const p = ps[i]
         p.life++; p.x += p.vx; p.y += p.vy; p.t += 0.025
@@ -127,10 +127,10 @@ export default function HomePage() {
           <span className="font-serif font-bold text-[15px] text-white tracking-tight">KadhaiSolai</span>
         </Link>
         <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-1.5 backdrop-blur-xl">
-          <Link href="/listen" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Browse</Link>
-          <Link href="/stories" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Stories</Link>
-          <Link href="/dashboard" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Dashboard</Link>
-          <Link href="/pricing" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Pricing</Link>
+          <Link href="/listen"        className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Browse</Link>
+          <Link href="/stories"       className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Stories</Link>
+          <Link href="/create"        className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Write</Link>
+          <Link href="/dashboard"     className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Dashboard</Link>
           <Link href="/documentation" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Docs</Link>
           <Link href="/author" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors">Upload Book</Link>
         </div>

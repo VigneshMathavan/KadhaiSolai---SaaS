@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Heart, MessageSquare, Share2, Sparkles, Loader2, Clock, Headphones } from 'lucide-react'
+import { ArrowLeft, Heart, MessageSquare, Share2, Sparkles, Loader2, Clock, Headphones, UserRound } from 'lucide-react'
 import {
   fetchStory, fetchComments, hasLiked, likeStory, unlikeStory,
   addComment, getFingerprint, type Story, type StoryComment,
 } from '@/lib/stories'
+import ConnectModal from '@/components/ConnectModal'
+import { recordListenEarning } from '@/lib/credits'
 
 const GENRE_EMOJI: Record<string, string> = {
   Drama: '🎭', Thriller: '⚡', Historical: '🏛️', Family: '🏡', Spiritual: '🪔', Fiction: '✨', Poetry: '🌸',
@@ -58,6 +60,9 @@ export default function StoryDetailPage() {
   const [fp, setFp] = useState('')
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [generatingAudio, setGeneratingAudio] = useState(false)
+  const [showConnect, setShowConnect] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const earnFiredRef = useRef(false)
 
   useEffect(() => {
     const fingerprint = getFingerprint()
@@ -252,6 +257,21 @@ export default function StoryDetailPage() {
             </button>
           </div>
 
+          {/* Connect with Author */}
+          {story.fingerprint && story.fingerprint !== fp && (
+            <div className="mt-6 p-5 rounded-2xl border border-gold/15 bg-gold/[0.025] flex items-center justify-between gap-4">
+              <div>
+                <p className="text-white/60 text-sm font-medium mb-0.5">💬 Connect with {story.author_name}</p>
+                <p className="text-white/25 text-xs">Send a message · 100 credits</p>
+              </div>
+              <button
+                onClick={() => setShowConnect(true)}
+                className="flex items-center gap-2 bg-gold/10 border border-gold/30 text-gold px-4 py-2 rounded-full text-xs hover:bg-gold/20 transition-all shrink-0">
+                <UserRound size={11} /> Connect
+              </button>
+            </div>
+          )}
+
           {/* Listen to Story */}
           <div className="mt-8 p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
             <div className="flex items-center justify-between gap-4">
@@ -269,8 +289,22 @@ export default function StoryDetailPage() {
             </div>
             {audioUrl && (
               <div className="mt-4">
-                <audio controls src={audioUrl} className="w-full h-10"
-                  style={{ colorScheme: 'dark', accentColor: '#c9a84c' }} />
+                <audio
+                  ref={audioRef}
+                  controls
+                  src={audioUrl}
+                  className="w-full h-10"
+                  style={{ colorScheme: 'dark', accentColor: '#c9a84c' }}
+                  onTimeUpdate={() => {
+                    const el = audioRef.current
+                    if (!el || earnFiredRef.current || !story?.fingerprint) return
+                    const pct = el.duration > 0 ? el.currentTime / el.duration : 0
+                    if (pct >= 0.7) {
+                      earnFiredRef.current = true
+                      recordListenEarning(story.fingerprint, `story-${story.id}`)
+                    }
+                  }}
+                />
                 <p className="text-white/20 text-[10px] mt-2 font-mono">
                   Narrated by Sarvam AI · Tamil TTS
                 </p>
@@ -332,6 +366,16 @@ export default function StoryDetailPage() {
           </Link>
         </div>
       </article>
+
+      {showConnect && story.fingerprint && (
+        <ConnectModal
+          authorName={story.author_name}
+          authorFp={story.fingerprint}
+          storyId={story.id}
+          storyTitle={story.title}
+          onClose={() => setShowConnect(false)}
+        />
+      )}
     </div>
   )
 }

@@ -7,11 +7,18 @@ import Link from 'next/link'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import {
-  Headphones, BookOpen, CheckCircle, XCircle, Users, Mic,
-  ArrowUpRight, Plus, Clock, Play, Zap, TrendingUp, Calendar, Star, Pencil,
+  Headphones, BookOpen, CheckCircle, XCircle, Users,
+  ArrowUpRight, Plus, Clock, Play, Zap, Calendar, Star,
+  Coins, MessageCircle, Inbox,
 } from 'lucide-react'
 import { fetchMyStories, getFingerprint, type Story } from '@/lib/stories'
 import { getStreakData, flameLevel, FLAME_COLORS, type StreakData } from '@/lib/streaks'
+import {
+  getCreditsData, purchaseCredits, CREDIT_PACKS,
+  creditsToRupees, typeLabel, getAuthorMessages,
+  type CreditTransaction, type AuthorMessage,
+} from '@/lib/credits'
+import AppNav from '@/components/AppNav'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const EARNINGS_PER_PLAY = 2 // ₹2 per play (simulated)
@@ -182,19 +189,54 @@ function CreateSessionModal({ onClose, onCreated }: { onClose: () => void; onCre
 // ── Listener View ─────────────────────────────────────────────────────────────
 function ListenerView() {
   const [currentBook, setCurrentBook] = useState<any>(null)
-  const [credits] = useState(50)
+  const [credits, setCredits] = useState<number | null>(null)
+  const [transactions, setTransactions] = useState<CreditTransaction[]>([])
+  const [creditsLoading, setCreditsLoading] = useState(true)
+  const [purchasing, setPurchasing] = useState<string | null>(null)
   const [myStories, setMyStories] = useState<Story[]>([])
   const [streak, setStreak] = useState<StreakData>({ currentStreak: 0, longestStreak: 0, totalStories: 0, lastPublishedDate: null, history: [] })
+  const [fp, setFp] = useState('')
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('ks_current_book')
       if (saved) setCurrentBook(JSON.parse(saved))
     } catch {}
-    const fp = getFingerprint()
+    const fingerprint = getFingerprint()
+    setFp(fingerprint)
     setStreak(getStreakData())
-    fetchMyStories(fp).then(setMyStories).catch(() => {})
+    fetchMyStories(fingerprint).then(setMyStories).catch(() => {})
+    getCreditsData(fingerprint)
+      .then(({ balance, transactions: txns }) => {
+        setCredits(balance)
+        setTransactions(txns)
+      })
+      .catch(() => {})
+      .finally(() => setCreditsLoading(false))
   }, [])
+
+  const handlePurchase = async (packId: string) => {
+    if (!fp) return
+    setPurchasing(packId)
+    try {
+      const result = await purchaseCredits(fp, packId)
+      if (result.success) {
+        setCredits(result.newBalance)
+        toast.success(`Credits added! Balance: ${result.newBalance.toLocaleString()}`)
+        // Refresh transactions
+        getCreditsData(fp).then(({ balance, transactions: txns }) => {
+          setCredits(balance)
+          setTransactions(txns)
+        }).catch(() => {})
+      } else {
+        toast.error(result.error || 'Purchase failed. Try again.')
+      }
+    } catch {
+      toast.error('Network error. Please retry.')
+    } finally {
+      setPurchasing(null)
+    }
+  }
 
   const recentDemoBooks = [
     { id: 'WtcPQC30axU', title: 'Ponniyin Selvan', genre: 'Historical', progress: 45 },
@@ -208,7 +250,7 @@ function ListenerView() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         <StatCard icon={<BookOpen size={15} />} label="Books Listened" value="3" />
         <StatCard icon={<Clock size={15} />} label="Hours Streamed" value="4.2h" />
-        <StatCard icon={<Zap size={15} />} label="Credits" value={String(credits)} sub="Use to meet authors" accent />
+        <StatCard icon={<Zap size={15} />} label="Credits" value={credits !== null ? credits.toLocaleString() : '…'} sub="Use to connect with authors" accent />
         <StatCard icon={<Star size={15} />} label="Current Plan" value="Free" sub="Upgrade for more" />
       </div>
 
@@ -314,21 +356,53 @@ function ListenerView() {
           <div className="p-5 rounded-2xl border border-gold/15 bg-gold/[0.03]">
             <SectionLabel>Author Connect Credits</SectionLabel>
             <div className="text-center mb-4">
-              <div className="text-4xl font-serif font-bold text-gold mb-1">{credits}</div>
-              <p className="text-white/30 text-xs font-mono uppercase tracking-widest">credits</p>
+              {creditsLoading ? (
+                <div className="w-5 h-5 border-2 border-gold/40 border-t-gold rounded-full animate-spin mx-auto" />
+              ) : (
+                <>
+                  <div className="text-4xl font-serif font-bold text-gold mb-1">
+                    {credits !== null ? credits.toLocaleString() : '0'}
+                  </div>
+                  <p className="text-white/30 text-xs font-mono uppercase tracking-widest">credits</p>
+                  <p className="text-white/20 text-[10px] mt-1">≈ {creditsToRupees(credits ?? 0)} value</p>
+                </>
+              )}
             </div>
             <p className="text-white/25 text-xs text-center mb-5 leading-relaxed px-2">
-              Use credits to book 1-on-1 sessions with authors or join paid read-alongs.
+              100 credits = one message to an author. Premium plan includes 2,000/mo.
             </p>
-            <div className="space-y-2">
-              {[{ label: '50 credits', price: '₹99' }, { label: '150 credits', price: '₹249' }, { label: '400 credits', price: '₹599' }].map(p => (
-                <button key={p.label} onClick={() => toast.success('Credits purchase coming soon!')}
-                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-white/[0.07] hover:border-gold/25 hover:bg-gold/[0.04] transition-all text-xs group">
-                  <span className="text-white/50 group-hover:text-white transition-colors">{p.label}</span>
-                  <span className="text-gold font-medium">{p.price}</span>
+            <div className="space-y-2 mb-4">
+              {CREDIT_PACKS.map(pack => (
+                <button
+                  key={pack.id}
+                  onClick={() => handlePurchase(pack.id)}
+                  disabled={purchasing === pack.id}
+                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-white/[0.07] hover:border-gold/25 hover:bg-gold/[0.04] transition-all text-xs group disabled:opacity-50">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/50 group-hover:text-white transition-colors">
+                      {purchasing === pack.id ? 'Processing…' : `${pack.credits.toLocaleString()} credits`}
+                    </span>
+                    {pack.badge && (
+                      <span className="text-[9px] bg-gold/20 text-gold px-1.5 py-0.5 rounded-full font-mono">{pack.badge}</span>
+                    )}
+                  </div>
+                  <span className="text-gold font-medium">₹{pack.price}</span>
                 </button>
               ))}
             </div>
+            {transactions.length > 0 && (
+              <div className="border-t border-white/[0.05] pt-3 space-y-1.5">
+                <p className="text-[9px] font-mono text-white/25 uppercase tracking-widest mb-2">Recent</p>
+                {transactions.slice(0, 3).map(tx => (
+                  <div key={tx.id} className="flex items-center justify-between text-[10px]">
+                    <span className="text-white/30 truncate">{typeLabel(tx.type)}</span>
+                    <span className={tx.amount > 0 ? 'text-green-400 font-mono' : 'text-red-400/70 font-mono'}>
+                      {tx.amount > 0 ? '+' : ''}{tx.amount}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Connect CTA */}
@@ -417,11 +491,25 @@ function AuthorView() {
   const [sessions, setSessions] = useState(DEMO_SESSIONS)
   const [showCreate, setShowCreate] = useState(false)
   const [streak, setStreak] = useState<StreakData>({ currentStreak: 0, longestStreak: 0, totalStories: 0, lastPublishedDate: null, history: [] })
+  const [authorCredits, setAuthorCredits] = useState<number | null>(null)
+  const [authorMessages, setAuthorMessages] = useState<AuthorMessage[]>([])
+  const [messagesLoading, setMessagesLoading] = useState(true)
 
   useEffect(() => {
     supabase.from('books').select('*').order('created_at', { ascending: false })
       .then(({ data }) => { setBooks(data || []); setLoading(false) })
     setStreak(getStreakData())
+
+    const fp = getFingerprint()
+    // Fetch author credits balance
+    getCreditsData(fp)
+      .then(({ balance }) => setAuthorCredits(balance))
+      .catch(() => {})
+    // Fetch messages sent to this author
+    getAuthorMessages(fp)
+      .then(msgs => setAuthorMessages(msgs))
+      .catch(() => {})
+      .finally(() => setMessagesLoading(false))
   }, [])
 
   const readyBooks = books.filter(b => b.status === 'ready')
@@ -443,8 +531,8 @@ function AuthorView() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         <StatCard icon={<BookOpen size={15} />} label="Books Published" value={loading ? '…' : String(readyBooks.length)} />
         <StatCard icon={<Headphones size={15} />} label="Total Plays" value={loading ? '…' : totalPlays >= 1000 ? `${(totalPlays / 1000).toFixed(1)}k` : String(totalPlays)} />
-        <StatCard icon={<TrendingUp size={15} />} label="Est. Earnings" value={loading ? '…' : `₹${totalEarnings.toLocaleString('en-IN')}`} sub="₹2 per play" accent />
-        <StatCard icon={<Users size={15} />} label="Connect Requests" value={String(requests.length)} sub={requests.length > 0 ? 'Awaiting response' : 'All clear'} />
+        <StatCard icon={<Coins size={15} />} label="Credits Earned" value={authorCredits !== null ? authorCredits.toLocaleString() : '…'} sub={authorCredits !== null ? `≈ ${creditsToRupees(authorCredits)}` : 'From messages & listens'} accent />
+        <StatCard icon={<Inbox size={15} />} label="Messages Inbox" value={messagesLoading ? '…' : String(authorMessages.length)} sub={authorMessages.length > 0 ? 'From listeners' : 'No messages yet'} />
       </div>
 
       <div className="grid lg:grid-cols-[1fr,340px] gap-6">
@@ -509,7 +597,7 @@ function AuthorView() {
           <div className="p-6 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
             <div className="flex items-start justify-between mb-2">
               <SectionLabel>Monthly Earnings</SectionLabel>
-              <span className="text-[9px] text-white/20 font-mono mt-1">Demo data · ₹2/play</span>
+              <span className="text-[9px] text-white/20 font-mono mt-1">Demo projection</span>
             </div>
             <EarningsChart data={EARNINGS_CHART} />
             <p className="text-center text-[10px] text-white/20 mt-2 font-mono">
@@ -520,47 +608,84 @@ function AuthorView() {
 
         {/* Right column */}
         <div className="space-y-4">
-          {/* Connect Requests */}
+          {/* Messages Inbox (real) */}
           <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-            <SectionLabel>Connect Requests</SectionLabel>
-            {requests.length === 0 ? (
+            <div className="flex items-center justify-between mb-4">
+              <SectionLabel>Messages Inbox</SectionLabel>
+              {authorCredits !== null && (
+                <div className="flex items-center gap-1 text-[10px] font-mono text-gold/70 border border-gold/20 bg-gold/[0.05] px-2.5 py-1 rounded-full">
+                  <Coins size={9} />
+                  <span>{authorCredits.toLocaleString()} credits</span>
+                </div>
+              )}
+            </div>
+            {messagesLoading ? (
+              <div className="py-8 flex justify-center">
+                <div className="w-5 h-5 border-2 border-gold/40 border-t-gold rounded-full animate-spin" />
+              </div>
+            ) : authorMessages.length === 0 ? (
               <div className="py-6 text-center">
-                <CheckCircle className="w-8 h-8 text-white/10 mx-auto mb-2" />
-                <p className="text-white/25 text-sm">No pending requests</p>
+                <MessageCircle className="w-8 h-8 text-white/10 mx-auto mb-2" />
+                <p className="text-white/25 text-sm">No messages yet</p>
+                <p className="text-white/15 text-xs mt-1">Listeners can message you from your stories</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {requests.map(r => (
-                  <div key={r.id} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                    <div className="flex items-start gap-2.5 mb-2">
-                      <span className="text-lg mt-0.5">{r.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-white text-sm font-medium truncate">{r.from}</p>
-                          <div className="flex items-center gap-1 shrink-0 bg-gold/[0.08] border border-gold/20 px-2 py-0.5 rounded-full">
-                            <Zap size={8} className="text-gold" />
-                            <span className="text-gold text-[10px] font-mono">{r.credits}</span>
-                          </div>
-                        </div>
-                        <p className="text-white/25 text-[10px] mt-0.5">{r.time}</p>
+              <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                {authorMessages.map(msg => (
+                  <div key={msg.id} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <p className="text-white text-sm font-medium truncate">{msg.from_name}</p>
+                      <div className="flex items-center gap-1 shrink-0 bg-gold/[0.08] border border-gold/20 px-2 py-0.5 rounded-full">
+                        <Coins size={8} className="text-gold" />
+                        <span className="text-gold text-[10px] font-mono">+{msg.author_credits_earned}</span>
                       </div>
                     </div>
-                    <p className="text-white/40 text-xs leading-relaxed mb-3">{r.message}</p>
-                    <div className="flex gap-2">
-                      <button onClick={() => accept(r.id)}
-                        className="flex-1 flex items-center justify-center gap-1.5 bg-gold/10 text-gold border border-gold/25 py-1.5 rounded-lg text-xs hover:bg-gold/20 transition-colors">
-                        <CheckCircle size={10} /> Accept
-                      </button>
-                      <button onClick={() => decline(r.id)}
-                        className="flex-1 flex items-center justify-center gap-1.5 text-white/30 border border-white/[0.08] py-1.5 rounded-lg text-xs hover:border-white/20 hover:text-white/50 transition-colors">
-                        <XCircle size={10} /> Decline
-                      </button>
-                    </div>
+                    <p className="text-white/40 text-xs leading-relaxed mb-2">{msg.message_text}</p>
+                    <p className="text-white/20 text-[10px] font-mono">
+                      {new Date(msg.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                    </p>
                   </div>
                 ))}
               </div>
             )}
           </div>
+
+          {/* Demo Connect Requests */}
+          {requests.length > 0 && (
+          <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+            <SectionLabel>Connect Requests</SectionLabel>
+            <div className="space-y-3">
+              {requests.map(r => (
+                <div key={r.id} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                  <div className="flex items-start gap-2.5 mb-2">
+                    <span className="text-lg mt-0.5">{r.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-white text-sm font-medium truncate">{r.from}</p>
+                        <div className="flex items-center gap-1 shrink-0 bg-gold/[0.08] border border-gold/20 px-2 py-0.5 rounded-full">
+                          <Zap size={8} className="text-gold" />
+                          <span className="text-gold text-[10px] font-mono">{r.credits}</span>
+                        </div>
+                      </div>
+                      <p className="text-white/25 text-[10px] mt-0.5">{r.time}</p>
+                    </div>
+                  </div>
+                  <p className="text-white/40 text-xs leading-relaxed mb-3">{r.message}</p>
+                  <div className="flex gap-2">
+                    <button onClick={() => accept(r.id)}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-gold/10 text-gold border border-gold/25 py-1.5 rounded-lg text-xs hover:bg-gold/20 transition-colors">
+                      <CheckCircle size={10} /> Accept
+                    </button>
+                    <button onClick={() => decline(r.id)}
+                      className="flex-1 flex items-center justify-center gap-1.5 text-white/30 border border-white/[0.08] py-1.5 rounded-lg text-xs hover:border-white/20 hover:text-white/50 transition-colors">
+                      <XCircle size={10} /> Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          )}
 
           {/* Writing Streak */}
           <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
@@ -649,27 +774,7 @@ export default function DashboardPage() {
       <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.025]"
         style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E\")" }} />
 
-      {/* Nav */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-void/90 backdrop-blur-xl border-b border-white/[0.05]">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple to-gold flex items-center justify-center text-sm shadow-lg shadow-purple/30">🎧</div>
-          <span className="font-serif font-bold text-white">KadhaiSolai</span>
-        </Link>
-        <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-1.5 backdrop-blur-xl">
-          <Link href="/listen" className="text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05] flex items-center gap-1.5">
-            <Headphones size={11} /> Browse
-          </Link>
-          <Link href="/stories" className="hidden sm:flex text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05] items-center gap-1.5">
-            <BookOpen size={11} /> Stories
-          </Link>
-          <Link href="/author" className="text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05] flex items-center gap-1.5">
-            <Mic size={11} /> Upload
-          </Link>
-          <Link href="/documentation" className="hidden sm:flex text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05] items-center gap-1.5">
-            Docs
-          </Link>
-        </div>
-      </header>
+      <AppNav showCredits />
 
       {/* Tab bar */}
       <div className="border-b border-white/[0.05] bg-void/50 backdrop-blur-sm">

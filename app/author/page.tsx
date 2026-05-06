@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, BookOpen, Loader2, CheckCircle, XCircle, Headphones } from 'lucide-react'
 import Link from 'next/link'
+import AppNav from '@/components/AppNav'
 
 interface Book {
   id: string
@@ -194,22 +195,7 @@ export default function AuthorDashboard() {
 
   return (
     <div className="min-h-screen bg-void">
-      {/* Header */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-void/90 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple to-gold flex items-center justify-center text-sm">🎧</div>
-          <span className="font-serif font-bold text-white">KadhaiSolai</span>
-          <span className="text-white/30 text-sm ml-2">/ Author Dashboard</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-white/50 hover:text-white text-sm transition-colors flex items-center gap-1">
-            Dashboard
-          </Link>
-          <Link href="/listen" className="text-white/50 hover:text-white text-sm transition-colors flex items-center gap-1">
-            <Headphones size={14} /> Browse
-          </Link>
-        </div>
-      </header>
+      <AppNav cta={{ label: 'My Dashboard', href: '/dashboard' }} />
 
       <main className="max-w-5xl mx-auto px-4 py-10">
         {/* Welcome */}
