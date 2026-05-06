@@ -665,6 +665,9 @@ export default function DashboardPage() {
           <Link href="/author" className="text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05] flex items-center gap-1.5">
             <Mic size={11} /> Upload
           </Link>
+          <Link href="/documentation" className="hidden sm:flex text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05] items-center gap-1.5">
+            Docs
+          </Link>
         </div>
       </header>
 

@@ -131,6 +131,7 @@ export default function HomePage() {
           <Link href="/stories" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Stories</Link>
           <Link href="/dashboard" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Dashboard</Link>
           <Link href="/pricing" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Pricing</Link>
+          <Link href="/documentation" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Docs</Link>
           <Link href="/author" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors">Upload Book</Link>
         </div>
       </nav>
@@ -539,14 +540,23 @@ export default function HomePage() {
 
       {/* ── FOOTER ───────────────────────────────────────────────────────────── */}
       <footer className="border-t border-white/[0.04] py-10 px-6 lg:px-16">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple to-gold flex items-center justify-center text-xs">🎧</div>
             <span className="font-serif font-bold text-white/18">KadhaiSolai</span>
           </div>
-          <div className="flex items-center gap-5">
-            <span className="font-mono text-[8px] tracking-widest text-white/16 uppercase">Tamil Audio Books</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <Link href="/listen" className="font-mono text-[8px] tracking-widest text-white/20 uppercase hover:text-white/50 transition-colors">Library</Link>
             <span className="text-white/[0.08]">·</span>
+            <Link href="/stories" className="font-mono text-[8px] tracking-widest text-white/20 uppercase hover:text-white/50 transition-colors">Stories</Link>
+            <span className="text-white/[0.08]">·</span>
+            <Link href="/create" className="font-mono text-[8px] tracking-widest text-white/20 uppercase hover:text-white/50 transition-colors">Write</Link>
+            <span className="text-white/[0.08]">·</span>
+            <Link href="/pricing" className="font-mono text-[8px] tracking-widest text-white/20 uppercase hover:text-white/50 transition-colors">Pricing</Link>
+            <span className="text-white/[0.08]">·</span>
+            <Link href="/documentation" className="font-mono text-[8px] tracking-widest text-gold/40 uppercase hover:text-gold/70 transition-colors">Documentation</Link>
+          </div>
+          <div className="flex items-center gap-5">
             <span className="font-mono text-[8px] tracking-widest text-white/16 uppercase">Powered by Sarvam AI</span>
           </div>
         </div>
