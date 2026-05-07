@@ -6,9 +6,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const admin = supabaseAdmin()
     const { data, error } = await admin
       .from('books')
-      .select(`
-        *, profiles:author_id (id, name, avatar_url, bio)
-      `)
+      .select('*')
       .eq('id', params.id)
       .eq('status', 'ready')
       .single()

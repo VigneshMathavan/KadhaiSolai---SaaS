@@ -12,11 +12,7 @@ export async function GET(req: NextRequest) {
     const admin = supabaseAdmin()
     let query = admin
       .from('books')
-      .select(`
-        id, title, description, genre, audio_duration, plays_count,
-        cover_url, audio_path, created_at, tts_voice,
-        profiles:author_id ( id, name, avatar_url )
-      `)
+      .select('*')
       .eq('status', 'ready')
       .eq('is_public', true)
       .order('created_at', { ascending: false })
