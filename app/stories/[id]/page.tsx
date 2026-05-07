@@ -12,6 +12,7 @@ import {
 } from '@/lib/stories'
 import ConnectModal from '@/components/ConnectModal'
 import { recordListenEarning } from '@/lib/credits'
+import AppNav from '@/components/AppNav'
 
 const GENRE_EMOJI: Record<string, string> = {
   Drama: '🎭', Thriller: '⚡', Historical: '🏛️', Family: '🏡', Spiritual: '🪔', Fiction: '✨', Poetry: '🌸',
@@ -167,25 +168,7 @@ export default function StoryDetailPage() {
         style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E\")" }} />
 
       {/* Nav */}
-      <nav className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 bg-void/90 backdrop-blur-xl border-b border-white/[0.05]">
-        <Link href="/stories" className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-sm">
-          <ArrowLeft size={15} /> <span className="hidden sm:inline">All Stories</span>
-        </Link>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple to-gold flex items-center justify-center text-xs">🎧</div>
-          <span className="font-serif font-bold text-sm text-white hidden sm:block">KadhaiSolai</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <button onClick={handleShare} className="text-white/35 hover:text-white transition-colors" title="Share">
-            <Share2 size={16} />
-          </button>
-          <button onClick={toggleLike}
-            className={`flex items-center gap-1.5 text-sm transition-colors ${liked ? 'text-pink-400' : 'text-white/35 hover:text-pink-400'}`}>
-            <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
-            <span className="font-mono text-xs">{likesCount}</span>
-          </button>
-        </div>
-      </nav>
+      <AppNav showCredits />
 
       {/* Article */}
       <article className="max-w-2xl mx-auto px-6 py-14">

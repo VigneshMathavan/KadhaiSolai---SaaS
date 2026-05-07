@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Upload, Headphones, Zap, BookOpen, Mic, Users, ArrowUpRight, Globe, Pencil } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import DemoSection from '@/components/DemoSection'
+import AppNav from '@/components/AppNav'
 
 // ─── Gold-only particles: tiny, slow, bottom → top ───────────────────────────
 function GoldParticles() {
@@ -121,20 +122,7 @@ export default function HomePage() {
         style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E\")" }} />
 
       {/* ── NAV ──────────────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 lg:px-12 py-5">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-purple to-gold flex items-center justify-center text-sm shadow-lg shadow-purple/30">🎧</div>
-          <span className="font-serif font-bold text-[15px] text-white tracking-tight">KadhaiSolai</span>
-        </Link>
-        <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-1.5 backdrop-blur-xl">
-          <Link href="/listen"        className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Browse</Link>
-          <Link href="/stories"       className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Stories</Link>
-          <Link href="/create"        className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Write</Link>
-          <Link href="/dashboard"     className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Dashboard</Link>
-          <Link href="/documentation" className="hidden sm:block text-xs text-white/40 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/[0.05]">Docs</Link>
-          <Link href="/author" className="text-xs bg-gold text-void font-semibold px-4 py-1.5 rounded-full hover:bg-gold2 transition-colors">Upload Book</Link>
-        </div>
-      </nav>
+      <AppNav cta={{ label: 'Upload Book', href: '/author' }} showCredits />
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col justify-center px-6 lg:px-16 pt-28 pb-20 overflow-hidden">

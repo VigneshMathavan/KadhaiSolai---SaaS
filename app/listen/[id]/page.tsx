@@ -11,6 +11,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { DEMO_BOOKS, type DemoBook } from '@/lib/demo-books'
+import AppNav from '@/components/AppNav'
 import {
   getProgress, updateProgress, recordListenDay, getListeningStats, fmtDuration,
 } from '@/lib/listening'
@@ -437,33 +438,7 @@ export default function PlayerPage() {
       </AnimatePresence>
 
       {/* NAV */}
-      <nav className="sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 py-4 bg-void/80 backdrop-blur-xl border-b border-white/[0.05]">
-        <Link href="/listen" className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm">
-          <ChevronLeft size={16} /><span className="hidden sm:inline">Library</span>
-        </Link>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple to-gold flex items-center justify-center text-xs">🎧</div>
-          <span className="font-serif font-bold text-sm text-white hidden sm:block">KadhaiSolai</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          {listenStats.streak > 0 && (
-            <div className="hidden sm:flex items-center gap-1 text-orange-400 text-xs font-mono">
-              <Flame size={12} /> {listenStats.streak}d
-            </div>
-          )}
-          <Link href="/dashboard" className="text-white/35 hover:text-white transition-colors text-xs hidden sm:block">
-            Dashboard
-          </Link>
-          <button onClick={() => setLiked(l => !l)}
-            className={`transition-colors ${liked ? 'text-pink-400' : 'text-white/35 hover:text-white'}`}>
-            <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
-          </button>
-          <a href={`https://www.youtube.com/watch?v=${book.ytId}`} target="_blank" rel="noopener noreferrer"
-            className="text-white/35 hover:text-white transition-colors" title="Watch on YouTube">
-            <ExternalLink size={16} />
-          </a>
-        </div>
-      </nav>
+      <AppNav showCredits />
 
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-10">
         <div className="grid lg:grid-cols-[1fr,340px] gap-8 lg:gap-14">
