@@ -221,13 +221,16 @@ function ListenerView() {
     try {
       const result = await purchaseCredits(fp, packId)
       if (result.success) {
+        // Update balance optimistically from purchase response — don't re-query
+        // (immediate re-query may hit a read replica with lag and revert the balance)
         setCredits(result.newBalance)
-        toast.success(`Credits added! Balance: ${result.newBalance.toLocaleString()}`)
-        // Refresh transactions
-        getCreditsData(fp).then(({ balance, transactions: txns }) => {
-          setCredits(balance)
-          setTransactions(txns)
-        }).catch(() => {})
+        toast.success(`Credits added! New balance: ${result.newBalance.toLocaleString()}`)
+        // Refresh only transactions (not balance) after a short delay for replica sync
+        setTimeout(() => {
+          getCreditsData(fp).then(({ transactions: txns }) => {
+            setTransactions(txns)
+          }).catch(() => {})
+        }, 1500)
       } else {
         toast.error(result.error || 'Purchase failed. Try again.')
       }

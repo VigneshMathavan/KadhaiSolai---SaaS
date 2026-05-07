@@ -18,18 +18,29 @@ export async function POST(req: NextRequest) {
 
   const admin = supabaseAdmin()
 
-  await admin.from('credits_ledger').insert({
-    fingerprint,
-    amount: pack.credits,
-    type: 'purchase',
-    note: `${pack.label} — ${pack.credits} credits (₹${pack.price}, simulated)`,
-  })
-
-  const { data } = await admin
+  // 1. Read current balance BEFORE inserting (avoids read-after-write replica lag)
+  const { data: existing } = await admin
     .from('credits_ledger')
     .select('amount')
     .eq('fingerprint', fingerprint)
 
-  const newBalance = Math.max(0, (data || []).reduce((s: number, t: { amount: number }) => s + t.amount, 0))
+  const currentBalance = Math.max(0, (existing || []).reduce(
+    (s: number, t: { amount: number }) => s + t.amount, 0
+  ))
+
+  // 2. Insert the purchase record
+  const { error: insertErr } = await admin.from('credits_ledger').insert({
+    fingerprint,
+    amount: pack.credits,
+    type: 'purchase',
+  })
+
+  if (insertErr) {
+    console.error('[credits purchase] insert error:', insertErr.message)
+    return NextResponse.json({ error: 'Purchase failed. Please try again.' }, { status: 500 })
+  }
+
+  // 3. Return computed balance — no second DB query needed
+  const newBalance = currentBalance + pack.credits
   return NextResponse.json({ success: true, newBalance, creditsAdded: pack.credits })
 }
