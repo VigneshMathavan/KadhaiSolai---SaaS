@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS public.author_messages (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   from_fingerprint      TEXT NOT NULL,
   to_fingerprint        TEXT NOT NULL,     -- author's fingerprint
-  story_id              UUID REFERENCES public.stories(id) ON DELETE SET NULL,
+  book_id               UUID REFERENCES public.books(id) ON DELETE SET NULL,
   from_name             TEXT NOT NULL DEFAULT 'Anonymous',
   message_text          TEXT NOT NULL,
   credits_spent         INTEGER NOT NULL DEFAULT 100,
